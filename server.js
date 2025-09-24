@@ -91,6 +91,24 @@ app.post('/orders', async (req, res) => {
       });
     }
     
+    // Validate name (letters only)
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(name)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Name must contain only letters and spaces'
+      });
+    }
+    
+    // Validate phone (numbers only)
+    const phoneRegex = /^[0-9]+$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Phone must contain only numbers'
+      });
+    }
+    
     // Create order object
     const order = {
       name,
@@ -169,6 +187,21 @@ app.put('/lessons/:id', async (req, res) => {
     
     // Remove _id from updates to prevent modification
     delete updates._id;
+    
+    // Validate numeric fields
+    if (updates.price !== undefined && (isNaN(updates.price) || updates.price < 0)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Price must be a non-negative number'
+      });
+    }
+    
+    if (updates.space !== undefined && (isNaN(updates.space) || updates.space < 0)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Space must be a non-negative number'
+      });
+    }
     
     const result = await lessonsCollection.updateOne(
       { _id: new ObjectId(id) },
