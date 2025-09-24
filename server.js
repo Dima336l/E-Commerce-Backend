@@ -23,6 +23,22 @@ app.get('/health', (req, res) => {
   });
 });
 
+// API Routes
+
+// GET /lessons - Get all lessons
+app.get('/lessons', async (req, res) => {
+  try {
+    const lessons = await lessonsCollection.find({}).toArray();
+    res.json(lessons);
+  } catch (error) {
+    console.error('Error fetching lessons:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch lessons'
+    });
+  }
+});
+
 // Connect to MongoDB
 async function connectToMongoDB() {
   try {
@@ -104,6 +120,7 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`🚀 EduMarket API Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`📚 Lessons API: http://localhost:${PORT}/lessons`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
