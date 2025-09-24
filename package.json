@@ -1,0 +1,13 @@
+{
+  "name": "ecommerce-backend",
+  "version": "1.0.0",
+  "description": "Express.js backend for after-school classes e-commerce app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["express", "nodejs", "rest-api", "ecommerce"],
+  "author": "Your Name",
+  "license": "MIT"
+}
