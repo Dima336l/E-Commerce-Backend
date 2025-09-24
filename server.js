@@ -39,6 +39,44 @@ app.get('/lessons', async (req, res) => {
   }
 });
 
+// GET /search - Search lessons
+app.get('/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Search query parameter "q" is required'
+      });
+    }
+    
+    // Create case-insensitive regex search
+    const searchRegex = new RegExp(q, 'i');
+    
+    const lessons = await lessonsCollection.find({
+      $or: [
+        { subject: searchRegex },
+        { location: searchRegex },
+        { price: { $regex: q } },
+        { space: { $regex: q } }
+      ]
+    }).toArray();
+    
+    res.json({
+      query: q,
+      results: lessons,
+      count: lessons.length
+    });
+  } catch (error) {
+    console.error('Error searching lessons:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to search lessons'
+    });
+  }
+});
+
 // Connect to MongoDB
 async function connectToMongoDB() {
   try {
@@ -121,6 +159,7 @@ async function startServer() {
       console.log(`🚀 EduMarket API Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
       console.log(`📚 Lessons API: http://localhost:${PORT}/lessons`);
+      console.log(`🔍 Search API: http://localhost:${PORT}/search?q=math`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
