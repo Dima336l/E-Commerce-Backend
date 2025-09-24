@@ -1,0 +1,3 @@
+This is a placeholder for math-hendon.jpg image file.
+In a real application, this would be an actual JPEG image file.
+The static file middleware will serve this file when requested via GET /images/math-hendon.jpg

@@ -10,7 +10,7 @@
     "dev-simple": "nodemon server-simple.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["express", "nodejs", "rest-api", "ecommerce"],
+  "keywords": ["express", "mongodb", "nodejs", "rest-api", "ecommerce"],
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
