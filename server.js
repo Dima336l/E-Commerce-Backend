@@ -1,4 +1,7 @@
 const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const path = require('path');
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
@@ -12,9 +15,26 @@ let lessonsCollection;
 let ordersCollection;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce';
 
-// Basic middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middleware
+app.use(helmet()); // Security headers
+app.use(cors()); // Enable CORS for all routes
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+// Custom logger middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  const method = req.method;
+  const url = req.url;
+  const userAgent = req.get('User-Agent') || 'Unknown';
+  const ip = req.ip || req.connection.remoteAddress;
+  
+  console.log(`[${timestamp}] ${method} ${url} - IP: ${ip} - User-Agent: ${userAgent}`);
+  next();
+});
+
+// Morgan logger for detailed HTTP logs
+app.use(morgan('combined'));
 
 // Static file middleware for images
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
