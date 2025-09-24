@@ -5,6 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "start-simple": "node server-simple.js",
+    "dev": "nodemon server.js",
+    "dev-simple": "nodemon server-simple.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["express", "nodejs", "rest-api", "ecommerce"],
@@ -17,5 +20,8 @@
     "cors": "^2.8.5",
     "helmet": "^7.0.0",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
