@@ -153,6 +153,51 @@ app.post('/orders', async (req, res) => {
   }
 });
 
+// PUT /lessons/:id - Update lesson
+app.put('/lessons/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    // Validate ObjectId
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid lesson ID format'
+      });
+    }
+    
+    // Remove _id from updates to prevent modification
+    delete updates._id;
+    
+    const result = await lessonsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updates }
+    );
+    
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Lesson not found'
+      });
+    }
+    
+    const updatedLesson = await lessonsCollection.findOne({ _id: new ObjectId(id) });
+    
+    res.json({
+      message: 'Lesson updated successfully',
+      lesson: updatedLesson
+    });
+    
+  } catch (error) {
+    console.error('Error updating lesson:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to update lesson'
+    });
+  }
+});
+
 // Connect to MongoDB
 async function connectToMongoDB() {
   try {
