@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const app = express();
@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3000;
 // MongoDB connection
 let db;
 let lessonsCollection;
+let ordersCollection;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce';
 
 // Basic middleware
@@ -77,6 +78,81 @@ app.get('/search', async (req, res) => {
   }
 });
 
+// POST /orders - Create a new order
+app.post('/orders', async (req, res) => {
+  try {
+    const { name, phone, lessons } = req.body;
+    
+    // Validation
+    if (!name || !phone || !lessons || !Array.isArray(lessons)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Name, phone, and lessons array are required'
+      });
+    }
+    
+    // Create order object
+    const order = {
+      name,
+      phone,
+      lessons,
+      totalAmount: 0,
+      createdAt: new Date(),
+      status: 'confirmed'
+    };
+    
+    // Calculate total amount and validate lesson availability
+    let totalAmount = 0;
+    for (const lessonOrder of lessons) {
+      const lesson = await lessonsCollection.findOne({ _id: new ObjectId(lessonOrder.lessonId) });
+      if (!lesson) {
+        return res.status(404).json({
+          error: 'Not Found',
+          message: `Lesson with ID ${lessonOrder.lessonId} not found`
+        });
+      }
+      
+      if (lesson.space < lessonOrder.quantity) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: `Not enough spaces available for ${lesson.subject} in ${lesson.location}`
+        });
+      }
+      
+      totalAmount += lesson.price * lessonOrder.quantity;
+    }
+    
+    order.totalAmount = totalAmount;
+    
+    // Insert order
+    const result = await ordersCollection.insertOne(order);
+    
+    // Update lesson spaces
+    for (const lessonOrder of lessons) {
+      await lessonsCollection.updateOne(
+        { _id: new ObjectId(lessonOrder.lessonId) },
+        { $inc: { space: -lessonOrder.quantity } }
+      );
+    }
+    
+    res.status(201).json({
+      message: 'Order created successfully',
+      orderId: result.insertedId,
+      order: {
+        ...order,
+        _id: result.insertedId
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to create order'
+    });
+  }
+});
+
 // Connect to MongoDB
 async function connectToMongoDB() {
   try {
@@ -88,6 +164,7 @@ async function connectToMongoDB() {
     
     db = client.db('ecommerce');
     lessonsCollection = db.collection('lessons');
+    ordersCollection = db.collection('orders');
     
     // Seed database with initial data if empty
     await seedDatabase();
@@ -160,6 +237,7 @@ async function startServer() {
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
       console.log(`📚 Lessons API: http://localhost:${PORT}/lessons`);
       console.log(`🔍 Search API: http://localhost:${PORT}/search?q=math`);
+      console.log(`🛒 Orders API: http://localhost:${PORT}/orders`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
