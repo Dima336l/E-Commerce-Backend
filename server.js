@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
@@ -13,6 +14,10 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ecomme
 
 // Basic middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Static file middleware for images
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
