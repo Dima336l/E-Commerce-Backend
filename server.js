@@ -22,12 +22,14 @@ async function connectToMongoDB() {
   try {
 
     console.log('🔄 Connecting to MongoDB...');
-    console.log('📍 Connection URI:', MONGODB_URI);
+    console.log('📍 Connection URI:', MONGODB_URI.replace(/:[^:@]+@/, ':****@'));
     
     // MongoDB connection options for Render.com compatibility
+    // Remove SSL/TLS options to use Node.js defaults
     const options = {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
+      family: 4, // Use IPv4, skip trying IPv6
     };
     
     const client = new MongoClient(MONGODB_URI, options);
