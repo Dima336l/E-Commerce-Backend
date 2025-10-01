@@ -24,12 +24,18 @@ async function connectToMongoDB() {
     console.log('🔄 Connecting to MongoDB...');
     console.log('📍 Connection URI:', MONGODB_URI.replace(/:[^:@]+@/, ':****@'));
     
-    // MongoDB connection options for Render.com compatibility
-    // Remove SSL/TLS options to use Node.js defaults
+    // MongoDB connection options for maximum compatibility with Render
     const options = {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
-      family: 4, // Use IPv4, skip trying IPv6
+      family: 4, // Use IPv4
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      retryWrites: true,
+      retryReads: true,
+      // Explicitly disable strict TLS validation as workaround for Render SSL issues
+      tlsAllowInvalidCertificates: true,
+      tlsAllowInvalidHostnames: true,
     };
     
     const client = new MongoClient(MONGODB_URI, options);
@@ -149,7 +155,12 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 })); // Security headers with CORS support for images
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'],
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:3000', 
+    'http://127.0.0.1:5173',
+    'https://dima336l.github.io'
+  ],
   credentials: true
 })); // Enable CORS for frontend
 app.use(express.json()); // Parse JSON bodies
