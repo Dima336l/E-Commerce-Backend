@@ -23,7 +23,14 @@ async function connectToMongoDB() {
 
     console.log('🔄 Connecting to MongoDB...');
     console.log('📍 Connection URI:', MONGODB_URI);
-    const client = new MongoClient(MONGODB_URI);
+    
+    // MongoDB connection options for Render.com compatibility
+    const options = {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+    
+    const client = new MongoClient(MONGODB_URI, options);
     await client.connect();
     console.log('✅ Connected to MongoDB successfully!');
     
