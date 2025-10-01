@@ -184,21 +184,6 @@ app.use(morgan('combined'));
 // Static file middleware (Required for coursework)
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
-// Static file middleware with error handling for missing images
-app.use('/images', (req, res, next) => {
-  const imagePath = path.join(__dirname, 'public/images', req.path);
-  const fs = require('fs');
-  
-  if (!fs.existsSync(imagePath)) {
-    return res.status(404).json({
-      error: 'Image not found',
-      message: `The requested image ${req.path} does not exist`,
-      timestamp: new Date().toISOString()
-    });
-  }
-  next();
-});
-
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
